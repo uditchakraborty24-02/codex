@@ -7,6 +7,9 @@ const bodyInput = document.querySelector("#loadBody");
 const concurrencyInput = document.querySelector("#concurrency");
 const runLoadBtn = document.querySelector("#runLoadBtn");
 
+let lastPerfResult = null;
+let lastPerfConfig = null;
+
 const runStatus = document.querySelector("#runStatus");
 const resultUsers = document.querySelector("#resultUsers");
 const resultTotalTime = document.querySelector("#resultTotalTime");
@@ -58,6 +61,16 @@ loadForm.addEventListener("submit", async (event) => {
   runStatus.textContent = "Running";
   runStatus.className = "status-code status-neutral";
   errorOutput.textContent = "Load test in progress...";
+  document.getElementById("genPerfReport").classList.add("hidden");
+
+  lastPerfConfig = {
+    users: Number(virtualUsersInput.value),
+    type: testTypeInput.value,
+    method: methodInput.value,
+    url: urlInput.value,
+    body: bodyInput.value,
+    concurrency: Number(concurrencyInput.value)
+  };
 
   try {
     const response = await fetch("/api/load-test", {
@@ -91,6 +104,9 @@ loadForm.addEventListener("submit", async (event) => {
     resultThroughput.textContent = `${result.requestsPerSecond.toFixed(2)} req/s`;
     resultActual.textContent = `${result.actualRequests.toLocaleString()} sampled`;
 
+    lastPerfResult = result;
+    document.getElementById("genPerfReport").classList.remove("hidden");
+
     let notes = "";
     if (result.isLocalTarget) {
       notes = "Note: Requests to the local server run sequentially (concurrent mode requires an external URL).\n\n";
@@ -103,4 +119,10 @@ loadForm.addEventListener("submit", async (event) => {
   } finally {
     setRunning(false);
   }
+});
+
+document.getElementById("genPerfReport").addEventListener("click", () => {
+  if (!lastPerfConfig || !lastPerfResult) return;
+  const { html, filename } = buildPerfReport(lastPerfConfig, lastPerfResult);
+  showReportModal(html, filename);
 });

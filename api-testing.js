@@ -12,6 +12,7 @@ const responseOutput = document.querySelector("#responseOutput");
 const responseTabs = document.querySelectorAll(".response-tab");
 
 let lastResponse = null;
+let lastRequest = null;
 let activeTab = "body";
 
 function requireSession() {
@@ -105,6 +106,14 @@ async function sendRequest(event) {
   timeValue.textContent = "--";
   sizeValue.textContent = "--";
   responseOutput.textContent = "Waiting for response...";
+  document.getElementById("genApiReport").classList.add("hidden");
+
+  lastRequest = {
+    method: methodInput.value,
+    url: urlInput.value,
+    headers: collectHeaders(),
+    body: bodyInput.value
+  };
 
   try {
     const response = await fetch("/api/request", {
@@ -112,12 +121,7 @@ async function sendRequest(event) {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        method: methodInput.value,
-        url: urlInput.value,
-        headers: collectHeaders(),
-        body: bodyInput.value
-      })
+      body: JSON.stringify(lastRequest)
     });
     const payload = await response.json();
 
@@ -131,6 +135,7 @@ async function sendRequest(event) {
     timeValue.textContent = `${payload.timeMs} ms`;
     sizeValue.textContent = `${new Blob([payload.body || ""]).size} B`;
     renderResponse();
+    document.getElementById("genApiReport").classList.remove("hidden");
   } catch (error) {
     lastResponse = {
       body: JSON.stringify({ message: error.message }, null, 2),
@@ -155,6 +160,12 @@ responseTabs.forEach((tab) => {
 
 addHeaderBtn.addEventListener("click", () => addHeaderRow());
 requestForm.addEventListener("submit", sendRequest);
+
+document.getElementById("genApiReport").addEventListener("click", () => {
+  if (!lastRequest || !lastResponse) return;
+  const { html, filename } = buildApiReport(lastRequest, lastResponse);
+  showReportModal(html, filename);
+});
 
 requireSession();
 addHeaderRow("Content-Type", "application/json");
