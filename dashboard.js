@@ -30,3 +30,23 @@ document.querySelectorAll("[data-href]").forEach((card) => {
     }
   });
 });
+
+const devToast = document.querySelector("#devToast");
+let toastTimer = null;
+
+function showDevToast() {
+  clearTimeout(toastTimer);
+  devToast.classList.add("show");
+  toastTimer = setTimeout(() => devToast.classList.remove("show"), 3000);
+}
+
+document.querySelectorAll("[data-dev]").forEach((card) => {
+  card.addEventListener("click", showDevToast);
+
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      showDevToast();
+    }
+  });
+});
