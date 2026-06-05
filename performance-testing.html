@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance Testing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="perf-body">
+  <main class="perf-shell">
+    <nav class="api-topbar" aria-label="Performance testing navigation">
+      <a class="back-link" href="/dashboard.html">Back to Dashboard</a>
+      <div class="brand-row dashboard-brand api-brand">
+        <div class="brand-mark" aria-hidden="true">P</div>
+        <span>Load Lab</span>
+      </div>
+    </nav>
+
+    <section class="perf-hero">
+      <div>
+        <p class="eyebrow">Performance Testing</p>
+        <h1>Run controlled load tests against any URL.</h1>
+      </div>
+      <p>Choose virtual users, set the target, and inspect response time, success rate, errors, and throughput.</p>
+    </section>
+
+    <section class="perf-studio">
+      <form class="perf-panel" id="loadForm">
+        <div class="perf-form-grid">
+          <label class="select-wrap" for="virtualUsers">
+            <span>Users / Machines</span>
+            <select id="virtualUsers" name="virtualUsers">
+              <option value="2">2</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="75">75</option>
+              <option value="100">100</option>
+              <option value="500">500</option>
+              <option value="750">750</option>
+              <option value="1000">1000</option>
+              <option value="5000">5000</option>
+              <option value="10000">10000</option>
+              <option value="50000">50000</option>
+              <option value="100000">1 lakh</option>
+            </select>
+          </label>
+
+          <label class="select-wrap" for="testType">
+            <span>Test Type</span>
+            <select id="testType" name="testType">
+              <option value="url">Hit URL</option>
+              <option value="button">Button action endpoint</option>
+            </select>
+          </label>
+
+          <label class="select-wrap" for="loadMethod">
+            <span>Method</span>
+            <select id="loadMethod" name="loadMethod">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>PATCH</option>
+              <option>DELETE</option>
+            </select>
+          </label>
+
+          <label class="select-wrap" for="concurrency">
+            <span>Concurrency</span>
+            <select id="concurrency" name="concurrency">
+              <option value="2">2 at once</option>
+              <option value="5">5 at once</option>
+              <option value="10" selected>10 at once</option>
+              <option value="25">25 at once</option>
+              <option value="50">50 at once</option>
+              <option value="75">75 at once</option>
+              <option value="100">100 at once</option>
+              <option value="500">500 at once</option>
+              <option value="1000">1000 at once</option>
+              <option value="5000">5000 at once</option>
+              <option value="10000">10000 at once</option>
+              <option value="25000">25000 at once</option>
+              <option value="50000">50000 at once</option>
+              <option value="100000">1 lakh at once</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="url-wrap perf-url" for="loadUrl">
+          <span>Target URL / Button Endpoint</span>
+          <input id="loadUrl" name="loadUrl" type="url" value="http://127.0.0.1:8000/" required>
+        </label>
+
+        <label class="editor-card perf-body-editor" for="loadBody">
+          <div class="section-heading">
+            <h2>Request Body</h2>
+            <span class="hint">Used for POST, PUT, PATCH</span>
+          </div>
+          <textarea id="loadBody" spellcheck="false" placeholder='{"event": "button_click"}'></textarea>
+        </label>
+
+        <button class="run-load-btn" id="runLoadBtn" type="submit">Run Load Test</button>
+      </form>
+
+      <section class="perf-results" aria-label="Performance test results">
+        <div class="perf-status-row">
+          <div>
+            <span>Run Status</span>
+            <strong id="runStatus">Idle</strong>
+          </div>
+          <div>
+            <span>Virtual Users</span>
+            <strong id="resultUsers">--</strong>
+          </div>
+          <div>
+            <span>Total Time</span>
+            <strong id="resultTotalTime">--</strong>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card success-metric">
+            <span>Successful</span>
+            <strong id="resultSuccess">--</strong>
+          </article>
+          <article class="metric-card error-metric">
+            <span>Errors</span>
+            <strong id="resultErrors">--</strong>
+          </article>
+          <article class="metric-card">
+            <span>Average Response</span>
+            <strong id="resultAverage">--</strong>
+          </article>
+          <article class="metric-card">
+            <span>Fastest / Slowest</span>
+            <strong id="resultRange">--</strong>
+          </article>
+          <article class="metric-card">
+            <span>Throughput</span>
+            <strong id="resultThroughput">--</strong>
+          </article>
+          <article class="metric-card">
+            <span>Actual Requests</span>
+            <strong id="resultActual">--</strong>
+          </article>
+        </div>
+
+        <section class="error-log">
+          <div class="section-heading">
+            <h2>Error Samples</h2>
+            <span class="hint">First few failures</span>
+          </div>
+          <pre id="errorOutput">No test run yet.</pre>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="performance-testing.js"></script>
+</body>
+</html>

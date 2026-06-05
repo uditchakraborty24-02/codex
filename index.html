@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Access Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="visual-panel" aria-label="Account access overview">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <span>Access Portal</span>
+      </div>
+      <div class="insight-card">
+        <div>
+          <span class="metric-label">Account status</span>
+          <strong>Protected</strong>
+        </div>
+        <span class="status-pill">Active</span>
+      </div>
+      <h1>Secure access for your workspace.</h1>
+      <p>Sign up once, then log in with the same email and password using the local server-backed account store.</p>
+      <div class="feature-list" aria-label="Security features">
+        <span>Password hashing</span>
+        <span>Server storage</span>
+        <span>Fast login</span>
+      </div>
+    </section>
+
+    <section class="auth-panel" aria-label="Authentication form">
+      <div class="mode-tabs" role="tablist" aria-label="Choose login or sign up">
+        <button class="mode-tab active" id="loginTab" type="button" role="tab" aria-selected="true">Login</button>
+        <button class="mode-tab" id="signupTab" type="button" role="tab" aria-selected="false">Sign Up</button>
+      </div>
+
+      <div class="form-heading">
+        <p class="eyebrow" id="formEyebrow">Welcome back</p>
+        <h2 id="formTitle">Login to your account</h2>
+      </div>
+
+      <form id="authForm" novalidate>
+        <label class="field name-field hidden" for="name">
+          <span>Name</span>
+          <input id="name" name="name" type="text" autocomplete="name" placeholder="Nova Parker">
+        </label>
+
+        <label class="field" for="email">
+          <span>Email</span>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        </label>
+
+        <label class="field" for="password">
+          <span>Password</span>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="At least 6 characters" required minlength="6">
+        </label>
+
+        <button class="submit-btn" id="submitBtn" type="submit">Login</button>
+      </form>
+
+      <p class="message" id="message" role="status" aria-live="polite"></p>
+
+      <button class="link-switch" id="linkSwitch" type="button">Need an account? Sign up</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

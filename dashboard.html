@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard-body">
+  <main class="dashboard-shell">
+    <nav class="dashboard-nav" aria-label="Dashboard navigation">
+      <div class="brand-row dashboard-brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <span>Access Portal</span>
+      </div>
+      <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+    </nav>
+
+    <section class="welcome-panel" aria-label="Welcome dashboard">
+      <div class="welcome-copy">
+        <p class="eyebrow">Authenticated session</p>
+        <h1>Welcome, <span id="dashboardName">User</span></h1>
+        <p>Your account is active and ready. This page is shown after a successful server-validated login.</p>
+      </div>
+
+      <div class="profile-card" aria-label="Profile summary">
+        <div class="avatar" id="dashboardInitial">U</div>
+        <div>
+          <span class="metric-label light">Signed in as</span>
+          <strong id="profileName">User</strong>
+          <p id="profileEmail">user@example.com</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-grid" aria-label="Account details">
+      <article class="dashboard-card action-card" data-href="/api-testing.html" tabindex="0" role="button" aria-label="Open Api Testing">
+        <span>Api Testing</span>
+        <strong>Ready</strong>
+        <p>Validate request handling, responses, and server-side authentication endpoints.</p>
+      </article>
+      <article class="dashboard-card">
+        <span>Design Testing</span>
+        <strong>Reviewed</strong>
+        <p>Check visual consistency, responsive layout, spacing, and professional presentation.</p>
+      </article>
+      <article class="dashboard-card">
+        <span>Functional Testing</span>
+        <strong>Passing</strong>
+        <p>Confirm signup, login, redirect, dashboard display, and logout behavior.</p>
+      </article>
+      <article class="dashboard-card action-card" data-href="/performance-testing.html" tabindex="0" role="button" aria-label="Open Performance Testing">
+        <span>Performance Testing</span>
+        <strong>Optimized</strong>
+        <p>Monitor loading speed, server response time, and smooth page interactions.</p>
+      </article>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

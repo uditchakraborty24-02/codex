@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Api Testing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="api-body">
+  <main class="api-shell">
+    <nav class="api-topbar" aria-label="Api testing navigation">
+      <a class="back-link" href="/dashboard.html">Back to Dashboard</a>
+      <div class="brand-row dashboard-brand api-brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <span>Request Studio</span>
+      </div>
+    </nav>
+
+    <section class="api-hero">
+      <div>
+        <p class="eyebrow">Api Testing</p>
+        <h1>Build, send, and inspect HTTP requests.</h1>
+      </div>
+      <p>Use the composer to test endpoints, configure headers and request body, then inspect status, timing, headers, and response output.</p>
+    </section>
+
+    <section class="request-studio" aria-label="Request studio">
+      <form class="request-panel" id="requestForm">
+        <div class="request-line">
+          <label class="select-wrap" for="method">
+            <span>Method</span>
+            <select id="method" name="method">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>PATCH</option>
+              <option>DELETE</option>
+              <option>HEAD</option>
+              <option>OPTIONS</option>
+            </select>
+          </label>
+          <label class="url-wrap" for="requestUrl">
+            <span>Request URL</span>
+            <input id="requestUrl" name="requestUrl" type="url" value="http://127.0.0.1:8000/" placeholder="https://api.example.com/items" required>
+          </label>
+          <button class="send-btn" id="sendBtn" type="submit">Send</button>
+        </div>
+
+        <div class="studio-grid">
+          <section class="editor-card" aria-label="Request headers">
+            <div class="section-heading">
+              <h2>Headers</h2>
+              <button class="small-btn" id="addHeaderBtn" type="button">Add Header</button>
+            </div>
+            <div class="headers-list" id="headersList"></div>
+          </section>
+
+          <section class="editor-card" aria-label="Request body">
+            <div class="section-heading">
+              <h2>Body</h2>
+              <span class="hint">JSON, text, or empty</span>
+            </div>
+            <textarea id="requestBody" spellcheck="false" placeholder='{"name": "Test User"}'></textarea>
+          </section>
+        </div>
+      </form>
+
+      <section class="response-panel" aria-label="Response panel">
+        <div class="response-summary">
+          <div>
+            <span>Status</span>
+            <strong id="statusValue">Idle</strong>
+          </div>
+          <div>
+            <span>Time</span>
+            <strong id="timeValue">--</strong>
+          </div>
+          <div>
+            <span>Size</span>
+            <strong id="sizeValue">--</strong>
+          </div>
+        </div>
+
+        <div class="response-tabs" role="tablist" aria-label="Response display">
+          <button class="response-tab active" type="button" data-tab="body">Body</button>
+          <button class="response-tab" type="button" data-tab="headers">Headers</button>
+        </div>
+
+        <pre class="response-output" id="responseOutput">Send a request to inspect the response.</pre>
+      </section>
+    </section>
+  </main>
+
+  <script src="api-testing.js"></script>
+</body>
+</html>
