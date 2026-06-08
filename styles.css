@@ -264,6 +264,32 @@ form {
   display: none;
 }
 
+.password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrap input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  transition: color 160ms;
+}
+
+.eye-btn:hover { color: var(--ink); }
+
 .submit-btn {
   min-height: 52px;
   margin-top: 8px;
