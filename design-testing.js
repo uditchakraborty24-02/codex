@@ -42,6 +42,7 @@ let siteCanvas  = null;
 let diffCanvas  = null;
 let activeView  = "figma";
 let sensitivity = 15;
+let lastDiff    = null;
 
 const sensLabels = {
   30: "Ignores minor colour shifts, catches layout differences",
@@ -211,6 +212,7 @@ compareBtn.addEventListener("click", async () => {
     // 4. Pixel diff
     const diff = analyzeDesigns(figmaCanvas, siteCanvas, sensitivity, W, H);
     diffCanvas = diff.canvas;
+    lastDiff   = diff;
 
     await progressTo(91, "Building overlay…",   350);
     await progressTo(96, "Generating report…",  350);
@@ -390,6 +392,22 @@ function analyzeDesigns(c1, c2, threshold, w, h) {
     mismatch:       Math.round(w * h * (1 - overall))
   };
 }
+
+const genDesignReport = document.getElementById("genDesignReport");
+
+genDesignReport.addEventListener("click", () => {
+  if (!lastDiff) return;
+  const diffDataUrl = diffCanvas ? diffCanvas.toDataURL("image/png") : null;
+  const sensitivityLabel = sensitivity === 30 ? "Low" : sensitivity === 15 ? "Medium" : "High";
+  const cfg = {
+    url:         siteUrl.value.trim(),
+    width:       vpWidth.value,
+    height:      vpHeight.value,
+    sensitivity: sensitivityLabel
+  };
+  const { html, filename } = buildDesignReport(cfg, lastDiff, diffDataUrl);
+  showReportModal(html, filename);
+});
 
 function setMetric(barEl, pctEl, score) {
   const pct = Math.round(score * 100);

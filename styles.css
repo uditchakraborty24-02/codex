@@ -1680,6 +1680,27 @@ form {
   background: #0f172a;
 }
 
+.design-report-row {
+  padding: 14px 18px 18px;
+}
+
+.design-report-btn {
+  width: 100%;
+  min-height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: opacity 160ms;
+}
+
+.design-report-btn:hover { opacity: 0.88; }
+
 .design-canvas-wrap canvas {
   display: block;
   max-width: 100%;

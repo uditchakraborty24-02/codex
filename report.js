@@ -255,4 +255,120 @@ ${body}
     return { html: wrap(html, "Load Test Report"), filename: `perf-report-${ts()}.html` };
   };
 
+  // ── Design Report ───────────────────────────────────────────────────────────
+  window.buildDesignReport = function (cfg, diff, diffDataUrl) {
+    const pct      = parseFloat(diff.mismatchPercent);
+    const badgeClass = pct < 25 ? "pass" : pct < 50 ? "warn" : "fail";
+    const badgeText  = pct < 25 ? "MINOR MISMATCH" : pct < 50 ? "MODERATE MISMATCH" : "MAJOR MISMATCH";
+
+    function metricRow(label, score) {
+      const p   = Math.round(score * 100);
+      const col  = p >= 85 ? "#16a34a" : p >= 60 ? "#d97706" : "#dc2626";
+      return `
+        <tr>
+          <td class="k">${esc(label)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden">
+                <div style="width:${p}%;height:100%;background:${col};border-radius:3px"></div>
+              </div>
+              <span style="font-weight:800;color:${col};min-width:38px;text-align:right">${p}%</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function findingDot(score) {
+      return score >= 0.90 ? "#16a34a" : score >= 0.65 ? "#d97706" : "#dc2626";
+    }
+
+    const findings = [
+      { label: "Color",       score: diff.color },
+      { label: "Overlap",     score: diff.overlap },
+      { label: "Structure",   score: diff.structure },
+      { label: "Spacing",     score: diff.spacing },
+      { label: "Typography",  score: diff.typography },
+    ];
+
+    const findingTexts = {
+      Color:      [
+        `Colors match well — the site palette is consistent with the design.`,
+        `Some color differences — a few elements use slightly different shades or tones.`,
+        `Significant color mismatch — the site and design look noticeably different in color.`
+      ],
+      Overlap:    [
+        `Content regions overlap well — elements are placed in matching positions on both designs.`,
+        `Some content misalignment — a few elements appear in different areas between the design and the site.`,
+        `Poor content overlap — many elements are positioned differently or are missing.`
+      ],
+      Structure:  [
+        `Layout and element positions match the design.`,
+        `Minor layout differences — some elements may be slightly shifted or resized.`,
+        `Layout doesn't match — elements appear to be missing, moved, or sized differently.`
+      ],
+      Spacing:    [
+        `Spacing, padding, and gaps match the design.`,
+        `Some spacing differences — margins or padding may be slightly off.`,
+        `Spacing doesn't match — gaps, padding, or margins differ noticeably from the design.`
+      ],
+      Typography: [
+        `Text and font styles look consistent with the design.`,
+        `Minor text differences — font weight, size, or line spacing may differ slightly.`,
+        `Typography doesn't match — fonts, text sizes, or text layout differ from the design.`
+      ]
+    };
+
+    const findingRows = findings.map(f => {
+      const p   = Math.round(f.score * 100);
+      const idx  = f.score >= 0.90 ? 0 : f.score >= 0.65 ? 1 : 2;
+      const dot  = findingDot(f.score);
+      return `<li style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:.88rem;line-height:1.5">
+        <span style="flex-shrink:0;width:8px;height:8px;border-radius:50%;background:${dot};margin-top:5px;display:inline-block"></span>
+        <span><strong>${esc(f.label)} (${p}%):</strong> ${findingTexts[f.label][idx]}</span>
+      </li>`;
+    }).join("");
+
+    const imgSection = diffDataUrl ? `
+  <div class="rs">
+    <h2>Diff Overlay</h2>
+    <p style="font-size:.82rem;color:#667085;margin-bottom:12px">Green = Figma&nbsp;&nbsp;·&nbsp;&nbsp;Red = Live Site&nbsp;&nbsp;·&nbsp;&nbsp;Black = Match</p>
+    <img src="${diffDataUrl}" style="max-width:100%;border-radius:10px;border:1px solid #e2e8f0" alt="Diff overlay">
+  </div>` : "";
+
+    const html = `
+  <div class="rh">
+    <h1>Design Compare Report</h1>
+    <p>${esc(cfg.url)} &nbsp;·&nbsp; ${esc(cfg.width)} × ${esc(cfg.height)} px</p>
+    <span class="rb ${badgeClass}">${badgeText} — ${pct}%</span>
+  </div>
+
+  <div class="rs">
+    <h2>Comparison Settings</h2>
+    <div class="kv">
+      <div class="k">Page URL</div><div class="v">${esc(cfg.url)}</div>
+      <div class="k">Viewport</div><div class="v">${esc(cfg.width)} × ${esc(cfg.height)} px</div>
+      <div class="k">Sensitivity</div><div class="v">${esc(cfg.sensitivity)}</div>
+      <div class="k">Overall Mismatch</div><div class="v"><strong>${pct}%</strong></div>
+    </div>
+  </div>
+
+  <div class="rs">
+    <h2>Metric Breakdown</h2>
+    <table style="width:100%;border-collapse:collapse">
+      <tbody>
+        ${findings.map(f => metricRow(f.label, f.score)).join("")}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rs">
+    <h2>What's Different</h2>
+    <ul style="list-style:none;padding:0;margin:0">${findingRows}</ul>
+  </div>
+
+  ${imgSection}`;
+
+    return { html: wrap(html, "Design Compare Report"), filename: `design-report-${ts()}.html` };
+  };
+
 })();
