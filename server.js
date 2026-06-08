@@ -2,9 +2,9 @@ const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 
-const BROWSER_PATHS = [
+const WINDOWS_PATHS = [
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
   'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -12,10 +12,11 @@ const BROWSER_PATHS = [
 ];
 
 function findBrowser() {
-  for (const p of BROWSER_PATHS) {
+  for (const p of WINDOWS_PATHS) {
     if (fs.existsSync(p)) return p;
   }
-  return null;
+  // On Linux/Render: use puppeteer's bundled Chromium
+  try { return puppeteer.executablePath(); } catch { return null; }
 }
 
 const app = express();
