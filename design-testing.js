@@ -1,4 +1,4 @@
-if (!sessionStorage.getItem("loggedInUser")) {
+if (!localStorage.getItem("loggedInUser")) {
   window.location.href = "/";
 }
 

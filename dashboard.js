@@ -1,4 +1,4 @@
-const savedUser = sessionStorage.getItem("loggedInUser");
+const savedUser = localStorage.getItem("loggedInUser");
 
 if (!savedUser) {
   window.location.href = "/";
@@ -14,7 +14,7 @@ if (!savedUser) {
 }
 
 document.querySelector("#logoutBtn").addEventListener("click", () => {
-  sessionStorage.removeItem("loggedInUser");
+  localStorage.removeItem("loggedInUser");
   window.location.href = "/";
 });
 

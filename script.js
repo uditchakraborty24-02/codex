@@ -77,7 +77,7 @@ async function handleLogin() {
   const password = passwordInput.value;
   const user = await postJson("/api/login", { email, password });
 
-  sessionStorage.setItem("loggedInUser", JSON.stringify(user));
+  localStorage.setItem("loggedInUser", JSON.stringify(user));
   window.location.href = "/dashboard.html";
 }
 

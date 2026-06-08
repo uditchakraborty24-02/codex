@@ -16,7 +16,7 @@ let lastRequest = null;
 let activeTab = "body";
 
 function requireSession() {
-  if (!sessionStorage.getItem("loggedInUser")) {
+  if (!localStorage.getItem("loggedInUser")) {
     window.location.href = "/";
   }
 }

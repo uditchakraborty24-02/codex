@@ -21,7 +21,7 @@ const resultThroughput = document.querySelector("#resultThroughput");
 const resultActual = document.querySelector("#resultActual");
 const errorOutput = document.querySelector("#errorOutput");
 
-if (!sessionStorage.getItem("loggedInUser")) {
+if (!localStorage.getItem("loggedInUser")) {
   window.location.href = "/";
 }
 
