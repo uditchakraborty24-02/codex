@@ -2,7 +2,8 @@ const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer');
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
 
 const WINDOWS_PATHS = [
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
@@ -11,11 +12,28 @@ const WINDOWS_PATHS = [
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
 ];
 
-function findBrowser() {
+function findWindowsBrowser() {
   for (const p of WINDOWS_PATHS) {
     if (fs.existsSync(p)) return p;
   }
-  return null; // null = let puppeteer use its own bundled Chromium
+  return null;
+}
+
+async function launchBrowser() {
+  if (process.platform === 'win32') {
+    const executablePath = findWindowsBrowser();
+    return puppeteer.launch({
+      headless: true,
+      executablePath,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    });
+  }
+  return puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: null,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+  });
 }
 
 const app = express();
@@ -236,24 +254,9 @@ app.post('/api/capture', async (req, res) => {
     return res.status(400).json({ message: 'Enter a valid absolute URL.' });
   }
 
-  const executablePath = findBrowser();
-
   let browser;
   try {
-    const launchOpts = {
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--disable-extensions',
-        '--no-first-run',
-          '--disable-features=TranslateUI'
-      ]
-    };
-    if (executablePath) launchOpts.executablePath = executablePath;
-    browser = await puppeteer.launch(launchOpts);
+    browser = await launchBrowser();
 
     const page = await browser.newPage();
     await page.setViewport({ width: parseInt(width, 10), height: parseInt(height, 10) });
