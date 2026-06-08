@@ -2,6 +2,21 @@ const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const puppeteer = require('puppeteer-core');
+
+const BROWSER_PATHS = [
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+];
+
+function findBrowser() {
+  for (const p of BROWSER_PATHS) {
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -211,6 +226,51 @@ app.post('/api/load-test', async (req, res) => {
     requestsPerSecond: totalTimeMs > 0 ? Math.round((results.length / (totalTimeMs / 1000)) * 100) / 100 : 0,
     errors: errorSamples
   });
+});
+
+// POST /api/capture  (screenshot for design comparison)
+app.post('/api/capture', async (req, res) => {
+  const { url, width = 1280, height = 900 } = req.body || {};
+
+  try { new URL(url); } catch {
+    return res.status(400).json({ message: 'Enter a valid absolute URL.' });
+  }
+
+  const executablePath = findBrowser();
+  if (!executablePath) {
+    return res.status(500).json({ message: 'No compatible browser found (Edge or Chrome required).' });
+  }
+
+  let browser;
+  try {
+    browser = await puppeteer.launch({
+      executablePath,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-extensions',
+        '--no-first-run',
+        '--disable-features=TranslateUI'
+      ]
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: parseInt(width, 10), height: parseInt(height, 10) });
+    await page.goto(url, { waitUntil: 'load', timeout: 30000 });
+
+    // Let fonts and CSS settle before capturing
+    await new Promise(r => setTimeout(r, 800));
+
+    const screenshot = await page.screenshot({ type: 'png', encoding: 'base64' });
+    res.json({ screenshot: `data:image/png;base64,${screenshot}` });
+  } catch (err) {
+    res.status(500).json({ message: `Capture failed: ${err.message}` });
+  } finally {
+    if (browser) await browser.close();
+  }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

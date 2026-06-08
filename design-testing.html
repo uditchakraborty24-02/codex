@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design Testing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="design-body">
+  <main class="design-shell">
+    <nav class="api-topbar" aria-label="Design testing navigation">
+      <a class="back-link" href="/dashboard.html">Back to Dashboard</a>
+      <div class="brand-row dashboard-brand api-brand">
+        <div class="brand-mark design-mark" aria-hidden="true">D</div>
+        <span>Design Compare</span>
+      </div>
+    </nav>
+
+    <section class="design-hero">
+      <div>
+        <p class="eyebrow">Design Testing</p>
+        <h1>Compare Figma designs with the live site.</h1>
+      </div>
+      <p>Upload your Figma screenshot, enter the page URL, and get an instant pixel-level mismatch report with a visual diff overlay.</p>
+    </section>
+
+    <section class="design-studio">
+
+      <!-- Left: Input Panel -->
+      <div class="design-input-panel">
+
+        <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload Figma screenshot">
+          <div class="upload-prompt" id="uploadPrompt">
+            <span class="upload-icon">🖼</span>
+            <strong>Drop Figma screenshot here</strong>
+            <span>or click to browse (PNG, JPG, WebP)</span>
+            <input type="file" id="figmaFile" accept="image/*">
+          </div>
+          <div class="upload-preview hidden" id="uploadPreview">
+            <img id="figmaPreview" alt="Figma preview">
+            <div class="upload-preview-info" id="uploadInfo"></div>
+            <button class="upload-clear" id="uploadClear" type="button">✕ Remove</button>
+          </div>
+        </div>
+
+        <label class="select-wrap design-field" for="siteUrl">
+          <span>Page URL to Capture</span>
+          <input id="siteUrl" type="url" placeholder="https://your-site.com/page" value="http://127.0.0.1:8000/">
+        </label>
+
+        <div class="design-viewport-row">
+          <label class="select-wrap" for="vpWidth">
+            <span>Viewport Width (px)</span>
+            <input id="vpWidth" type="number" value="1280" min="320" max="3840">
+          </label>
+          <label class="select-wrap" for="vpHeight">
+            <span>Viewport Height (px)</span>
+            <input id="vpHeight" type="number" value="900" min="240" max="2160">
+          </label>
+        </div>
+
+        <div class="select-wrap">
+          <span>Sensitivity</span>
+          <div class="sensitivity-tabs" id="sensitivityTabs" role="group" aria-label="Comparison sensitivity">
+            <button class="sens-tab" data-value="30" type="button">Low</button>
+            <button class="sens-tab active" data-value="15" type="button">Medium</button>
+            <button class="sens-tab" data-value="5" type="button">High</button>
+          </div>
+          <span class="hint" id="sensHint">Ignores minor colour shifts, catches layout differences</span>
+        </div>
+
+        <button class="design-compare-btn" id="compareBtn" type="button" disabled>
+          Run Comparison
+        </button>
+
+        <p class="design-note" id="compareStatus"></p>
+      </div>
+
+      <!-- Right: Results Panel -->
+      <div class="design-results-panel">
+
+        <div class="design-progress-wrap hidden" id="progressWrap">
+          <div class="design-progress-track">
+            <div class="design-progress-fill" id="progressFill"></div>
+          </div>
+          <p class="design-progress-label" id="progressLabel">Preparing…</p>
+        </div>
+
+        <div class="design-empty-state" id="emptyState">
+          <span class="design-empty-icon">🎨</span>
+          <p>Upload a Figma screenshot and enter a URL to begin</p>
+        </div>
+
+        <div class="design-results hidden" id="resultsContent">
+
+          <div class="design-score-row">
+            <div>
+              <span class="design-score-label">Visual Mismatch</span>
+              <strong class="design-score" id="mismatchScore">--</strong>
+            </div>
+            <span class="design-result-badge" id="designBadge">--</span>
+          </div>
+
+          <div class="design-metrics-grid">
+            <div class="design-metric-card">
+              <span class="design-metric-label">Color</span>
+              <div class="design-metric-bar-wrap"><div class="design-metric-bar" id="barColor"></div></div>
+              <strong class="design-metric-pct" id="pctColor">--</strong>
+            </div>
+            <div class="design-metric-card">
+              <span class="design-metric-label">Overlap</span>
+              <div class="design-metric-bar-wrap"><div class="design-metric-bar" id="barOverlap"></div></div>
+              <strong class="design-metric-pct" id="pctOverlap">--</strong>
+            </div>
+            <div class="design-metric-card">
+              <span class="design-metric-label">Structure</span>
+              <div class="design-metric-bar-wrap"><div class="design-metric-bar" id="barStructure"></div></div>
+              <strong class="design-metric-pct" id="pctStructure">--</strong>
+            </div>
+            <div class="design-metric-card">
+              <span class="design-metric-label">Spacing &amp; Gaps</span>
+              <div class="design-metric-bar-wrap"><div class="design-metric-bar" id="barSpacing"></div></div>
+              <strong class="design-metric-pct" id="pctSpacing">--</strong>
+            </div>
+            <div class="design-metric-card">
+              <span class="design-metric-label">Typography</span>
+              <div class="design-metric-bar-wrap"><div class="design-metric-bar" id="barTypography"></div></div>
+              <strong class="design-metric-pct" id="pctTypography">--</strong>
+            </div>
+          </div>
+
+          <div class="design-findings hidden" id="designFindings">
+            <p class="design-findings-title">What's different</p>
+            <ul class="design-findings-list" id="findingsList"></ul>
+          </div>
+
+          <div class="design-comp-tabs" role="tablist">
+            <button class="design-comp-tab active" data-view="figma" type="button">Figma Design</button>
+            <button class="design-comp-tab" data-view="site" type="button">Live Site</button>
+            <button class="design-comp-tab" data-view="diff" type="button">Diff Overlay</button>
+          </div>
+
+          <div class="design-canvas-wrap">
+            <canvas id="displayCanvas"></canvas>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="design-testing.js"></script>
+</body>
+</html>

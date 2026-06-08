@@ -50,3 +50,59 @@ document.querySelectorAll("[data-dev]").forEach((card) => {
     }
   });
 });
+
+// ── Design Testing modal ──────────────────────────────────
+const designModal = document.createElement("div");
+designModal.className = "report-modal-overlay";
+designModal.id = "designModalOverlay";
+designModal.innerHTML = `
+  <div class="report-modal-box">
+    <p class="report-modal-title">Design Testing</p>
+    <p class="report-modal-sub">Choose a testing approach</p>
+    <div class="report-modal-choices">
+      <button class="report-choice" id="designChoiceFigma">
+        <span class="report-choice-icon">🎨</span>
+        <strong>Figma Compare</strong>
+        <span>Upload Figma screenshot and compare with live site pixel by pixel</span>
+      </button>
+      <button class="report-choice" id="designChoiceOthers">
+        <span class="report-choice-icon">⚙</span>
+        <strong>Others</strong>
+        <span>More testing approaches</span>
+      </button>
+    </div>
+    <button class="report-modal-cancel" id="designModalCancel">Cancel</button>
+  </div>
+`;
+document.body.appendChild(designModal);
+
+function openDesignModal() {
+  designModal.classList.add("active");
+}
+
+function closeDesignModal() {
+  designModal.classList.remove("active");
+}
+
+document.getElementById("designChoiceFigma").addEventListener("click", () => {
+  closeDesignModal();
+  window.location.href = "/design-testing.html";
+});
+
+document.getElementById("designChoiceOthers").addEventListener("click", () => {
+  closeDesignModal();
+  showDevToast();
+});
+
+document.getElementById("designModalCancel").addEventListener("click", closeDesignModal);
+designModal.addEventListener("click", (e) => { if (e.target === designModal) closeDesignModal(); });
+
+document.querySelectorAll("[data-design]").forEach((card) => {
+  card.addEventListener("click", openDesignModal);
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openDesignModal();
+    }
+  });
+});
