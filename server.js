@@ -15,8 +15,7 @@ function findBrowser() {
   for (const p of WINDOWS_PATHS) {
     if (fs.existsSync(p)) return p;
   }
-  // On Linux/Render: use puppeteer's bundled Chromium
-  try { return puppeteer.executablePath(); } catch { return null; }
+  return null; // null = let puppeteer use its own bundled Chromium
 }
 
 const app = express();
@@ -238,14 +237,10 @@ app.post('/api/capture', async (req, res) => {
   }
 
   const executablePath = findBrowser();
-  if (!executablePath) {
-    return res.status(500).json({ message: 'No compatible browser found (Edge or Chrome required).' });
-  }
 
   let browser;
   try {
-    browser = await puppeteer.launch({
-      executablePath,
+    const launchOpts = {
       headless: true,
       args: [
         '--no-sandbox',
@@ -254,9 +249,11 @@ app.post('/api/capture', async (req, res) => {
         '--disable-gpu',
         '--disable-extensions',
         '--no-first-run',
-        '--disable-features=TranslateUI'
+          '--disable-features=TranslateUI'
       ]
-    });
+    };
+    if (executablePath) launchOpts.executablePath = executablePath;
+    browser = await puppeteer.launch(launchOpts);
 
     const page = await browser.newPage();
     await page.setViewport({ width: parseInt(width, 10), height: parseInt(height, 10) });
