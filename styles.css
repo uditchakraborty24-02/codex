@@ -2519,17 +2519,17 @@ form {
 }
 .func-screenshot-btn:hover { background: #fee2e2; }
 
-/* Screenshot modal */
+/* Screenshot modal — hidden by default; shown only when .hidden is absent */
 .func-ss-modal {
+  display: none;
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: flex;
   align-items: center;
   justify-content: center;
 }
-.func-ss-modal.hidden {
-  display: none;
+.func-ss-modal:not(.hidden) {
+  display: flex;
 }
 .func-ss-backdrop {
   position: absolute;
