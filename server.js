@@ -42,105 +42,93 @@ function findWindowsBrowser() {
   return null;
 }
 
-// ── Firefox launch via selenium-webdriver + geckodriver ─────────────────────
-// Firefox v86+ speaks WebDriver BiDi, not CDP.  Puppeteer cannot connect to
-// it directly.  We use the official selenium-webdriver + geckodriver path,
-// then wrap the Selenium driver in a thin Puppeteer-shaped API so that
-// executeStep / evaluateExpected need no changes.
+// ── Playwright Firefox path discovery ──────────────────────────────────────
+// Playwright downloads Firefox to ~/.cache/ms-playwright on Linux.
+// We scan that directory to find the actual binary after `npx playwright install`.
+function getPlaywrightFirefoxPath() {
+  try {
+    // playwright-core exposes executablePath() when the browser is installed
+    const { firefox } = require('playwright-core');
+    if (typeof firefox.executablePath === 'function') {
+      const p = firefox.executablePath();
+      if (p && fs.existsSync(p)) return p;
+    }
+  } catch {}
 
-let _geckodriverExe = null; // cached after first download
+  // Fallback: scan ~/.cache/ms-playwright for a firefox-* entry
+  try {
+    const cacheDir = path.join(os.homedir(), '.cache', 'ms-playwright');
+    if (!fs.existsSync(cacheDir)) return null;
+    const entries = fs.readdirSync(cacheDir).filter(d => d.startsWith('firefox'));
+    for (const entry of entries) {
+      for (const rel of ['firefox/firefox', 'firefox-linux/firefox']) {
+        const p = path.join(cacheDir, entry, rel);
+        if (fs.existsSync(p)) return p;
+      }
+    }
+  } catch {}
+  return null;
+}
 
+// ── Firefox launch via Playwright ──────────────────────────────────────────
+// Works on both Windows (system Firefox via executablePath) and Linux
+// (Playwright-managed Firefox installed by install-browsers.js).
+// The shim exposes a Puppeteer-compatible page/browser API so executeStep and
+// evaluateExpected need no changes.
 async function launchFirefox(exePath, headless) {
-  const { download }  = require('geckodriver');
-  const { Builder, By, Key } = require('selenium-webdriver');
-  const firefox = require('selenium-webdriver/firefox');
+  const { firefox } = require('playwright-core');
 
-  // Download geckodriver once (subsequent calls use the cached binary)
-  if (!_geckodriverExe) {
-    _geckodriverExe = await download();
-  }
+  const launchOptions = { headless };
+  if (exePath) launchOptions.executablePath = exePath;
+  if (!headless) launchOptions.args = ['-foreground'];
 
-  const opts = new firefox.Options().setBinary(exePath);
-  if (headless) {
-    opts.addArguments('--headless');
-  } else {
-    opts.addArguments('-foreground'); // bring Firefox window to front on Windows
-  }
+  const pwBrowser = await firefox.launch(launchOptions);
+  const context   = await pwBrowser.newContext({ viewport: { width: 1280, height: 800 } });
+  const pwPage    = await context.newPage();
 
-  const svc = new firefox.ServiceBuilder(_geckodriverExe);
-
-  const driver = await new Builder()
-    .forBrowser('firefox')
-    .setFirefoxOptions(opts)
-    .setFirefoxService(svc)
-    .build();
-
-  await driver.manage().setTimeouts({ pageLoad: 30000, script: 15000 });
-  if (!headless) await driver.manage().window().maximize();
-
-  // Puppeteer key names → Selenium Key constants
-  const keyMap = {
-    Enter: Key.RETURN, Return: Key.RETURN, Tab: Key.TAB,
-    Escape: Key.ESCAPE, Backspace: Key.BACK_SPACE, Delete: Key.DELETE,
-    ArrowUp: Key.ARROW_UP, ArrowDown: Key.ARROW_DOWN,
-    ArrowLeft: Key.ARROW_LEFT, ArrowRight: Key.ARROW_RIGHT, Space: Key.SPACE,
+  const WU_MAP = {
+    networkidle0: 'networkidle', networkidle2: 'networkidle',
+    load: 'load', domcontentloaded: 'domcontentloaded',
   };
 
-  // cachedUrl is updated after each navigation so page.url() stays synchronous
-  let cachedUrl = '';
-
   const page = {
-    url() { return cachedUrl; },
+    url() { return pwPage.url(); },
 
-    async goto(url) {
-      await driver.get(url);
-      await driver.sleep(800);
-      cachedUrl = await driver.getCurrentUrl().catch(() => url);
-      return { url: () => cachedUrl };
+    async goto(url, opts = {}) {
+      await pwPage.goto(url, {
+        waitUntil: WU_MAP[opts.waitUntil] || 'load',
+        timeout: opts.timeout || 30000,
+      });
+      return { url: () => pwPage.url() };
     },
 
-    // Serialise the function and execute it in the browser context
-    async evaluate(fn, ...args) {
-      return driver.executeScript(
-        `return (${fn.toString()}).apply(null, arguments)`,
-        ...args
-      );
-    },
-
-    async title() { return driver.getTitle(); },
-    async setViewport() { /* no-op */ },
+    async evaluate(fn, ...args) { return pwPage.evaluate(fn, ...args); },
+    async title()               { return pwPage.title(); },
+    async setViewport()         { /* handled by context viewport */ },
 
     async click(selector, opts = {}) {
-      const el = await driver.findElement(By.css(selector));
-      if (opts.clickCount === 3) {
-        // Select-all before typing (Puppeteer triple-click idiom)
-        await el.click();
-        await el.sendKeys(Key.chord(Key.CONTROL, 'a'));
-      } else {
-        await el.click();
-      }
-      cachedUrl = await driver.getCurrentUrl().catch(() => cachedUrl);
+      await pwPage.click(selector, opts.clickCount ? { clickCount: opts.clickCount } : {});
     },
 
     async type(selector, text) {
-      const el = await driver.findElement(By.css(selector));
-      await el.sendKeys(text);
+      await pwPage.fill(selector, '');
+      await pwPage.type(selector, String(text));
     },
 
     async waitForNavigation(opts = {}) {
-      const t = Math.min(opts.timeout || 2000, 3000);
-      await driver.sleep(t);
-      cachedUrl = await driver.getCurrentUrl().catch(() => cachedUrl);
+      try { await pwPage.waitForLoadState('load', { timeout: opts.timeout || 3000 }); } catch {}
     },
 
+    // Returns a base64 string — captureScreenshot() handles Buffer vs string already
     async screenshot() {
-      return driver.takeScreenshot(); // returns base64 PNG
+      const buf = await pwPage.screenshot({ type: 'png' });
+      return buf.toString('base64');
     },
 
     keyboard: {
-      async press(puppeteerKey) {
-        const k = keyMap[puppeteerKey] || puppeteerKey;
-        await driver.actions({ async: true }).keyDown(k).keyUp(k).perform();
+      async press(key) {
+        const map = { Return: 'Enter', Space: 'Space' };
+        await pwPage.keyboard.press(map[key] || key);
       },
     },
 
@@ -148,24 +136,22 @@ async function launchFirefox(exePath, headless) {
   };
 
   const browser = {
-    async newPage() { return page; },
-    async pages()   { return [page]; },
-    async close()   { try { await driver.quit(); } catch {} },
-    async disconnect() { try { await driver.quit(); } catch {} },
+    async newPage()    { return page; },
+    async pages()      { return [page]; },
+    async close()      { try { await pwBrowser.close(); } catch {} },
+    async disconnect() { try { await pwBrowser.close(); } catch {} },
   };
 
   return browser;
 }
 
 async function launchBrowser(headless = true, executablePath = null) {
+  // Firefox is always launched via Playwright regardless of platform
+  const isFirefox = executablePath && executablePath.toLowerCase().includes('firefox');
+  if (isFirefox) return launchFirefox(executablePath, headless);
+
   if (process.platform === 'win32') {
     const exePath = executablePath || findWindowsBrowser();
-    const isFirefox = exePath && exePath.toLowerCase().includes('firefox');
-
-    if (isFirefox) {
-      return launchFirefox(exePath, headless);
-    }
-
     return puppeteer.launch({
       headless,
       executablePath: exePath,
@@ -175,6 +161,8 @@ async function launchBrowser(headless = true, executablePath = null) {
       ],
     });
   }
+
+  // Linux / Render — use @sparticuz/chromium
   return puppeteer.launch({
     args: chromium.args,
     defaultViewport: null,
@@ -668,7 +656,11 @@ async function evaluateExpected(page, expected, fallbackUrl = '') {
 // GET /api/browsers
 app.get('/api/browsers', (req, res) => {
   if (process.platform !== 'win32') {
-    return res.json([{ id: 'default', name: 'Default (Chromium)', path: null }]);
+    // Linux (Render): always offer Chromium; add Firefox if Playwright installed it
+    const browsers = [{ id: 'chromium', name: 'Chromium', path: null }];
+    const ffPath = getPlaywrightFirefoxPath();
+    if (ffPath) browsers.push({ id: 'firefox', name: 'Firefox', path: ffPath });
+    return res.json(browsers);
   }
   const browsers = findInstalledBrowsers();
   if (!browsers.length) browsers.push({ id: 'default', name: 'Default', path: null });
