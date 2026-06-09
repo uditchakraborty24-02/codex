@@ -4,8 +4,7 @@
   "description": "Access Portal with API and Performance Testing",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "node install-browsers.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "@sparticuz/chromium": "^121.0.0",

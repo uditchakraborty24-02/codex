@@ -656,19 +656,10 @@ async function evaluateExpected(page, expected, fallbackUrl = '') {
 // GET /api/browsers
 app.get('/api/browsers', (req, res) => {
   if (process.platform !== 'win32') {
-    // Linux (Render): Chrome via @sparticuz/chromium is always available
-    const browsers = [{ id: 'chrome', name: 'Chrome', path: null }];
-
-    // Firefox: Playwright-managed binary
-    const ffPath = getPlaywrightFirefoxPath()
-      // Fallback: system Firefox installed via apt
-      || ['/usr/bin/firefox', '/usr/lib/firefox/firefox', '/snap/bin/firefox']
-          .find(p => fs.existsSync(p))
-      || null;
-
-    if (ffPath) browsers.push({ id: 'firefox', name: 'Firefox', path: ffPath });
-    return res.json(browsers);
+    // Linux (Render): only Chrome is reliably available via @sparticuz/chromium
+    return res.json([{ id: 'chrome', name: 'Chrome', path: null }]);
   }
+  // Windows: scan for system-installed browsers
   const browsers = findInstalledBrowsers();
   if (!browsers.length) browsers.push({ id: 'default', name: 'Default', path: null });
   res.json(browsers);
