@@ -1,3 +1,6 @@
+// Force-hide screenshot modal before anything else runs
+document.getElementById("screenshotModal").style.display = "none";
+
 // Auth guard
 const _user = JSON.parse(localStorage.getItem("loggedInUser") || "null");
 if (!_user) { window.location.href = "/"; }
