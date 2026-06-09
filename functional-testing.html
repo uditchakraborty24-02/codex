@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Functional Testing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="func-body">
+  <main class="func-shell">
+    <nav class="api-topbar" aria-label="Functional testing navigation">
+      <a class="back-link" href="/dashboard.html">Back to Dashboard</a>
+      <div class="brand-row dashboard-brand api-brand">
+        <div class="brand-mark func-mark" aria-hidden="true">F</div>
+        <span>Functional Testing</span>
+      </div>
+    </nav>
+
+    <section class="func-hero">
+      <div>
+        <p class="eyebrow">Manual Testing</p>
+        <h1>Write and manage test cases.</h1>
+      </div>
+      <p>Create test cases manually in a structured table, or upload an Excel sheet. Track names, steps, expected vs actual output, and status for every test.</p>
+    </section>
+
+    <!-- Sub-mode tabs: Write / Upload -->
+    <div class="func-mode-row" role="tablist" aria-label="Test case input method">
+      <button class="func-mode-tab active" data-mode="write" type="button" role="tab" aria-selected="true">
+        <span class="func-tab-icon">✏️</span>
+        <div>
+          <strong>Write Test Case</strong>
+          <span>Add test cases manually in a table</span>
+        </div>
+      </button>
+      <button class="func-mode-tab" data-mode="upload" type="button" role="tab" aria-selected="false">
+        <span class="func-tab-icon">📂</span>
+        <div>
+          <strong>Upload Test Case</strong>
+          <span>Import from an Excel or CSV file</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- Shared browser / headless controls (used by both panels) -->
+    <div class="func-shared-bar">
+      <select class="func-browser-select" id="browserSelect" title="Choose browser">
+        <option value="">Loading…</option>
+      </select>
+      <label class="func-headless-toggle" title="Toggle browser visibility while running tests">
+        <input type="checkbox" id="headlessToggle">
+        <span class="func-toggle-track"><span class="func-toggle-thumb"></span></span>
+        <span class="func-toggle-label" id="headlessLabel">Headless</span>
+      </label>
+    </div>
+
+    <!-- ── Write Test Case Panel ──────────────────────── -->
+    <section class="func-panel" id="writePanel" role="tabpanel">
+      <div class="func-panel-header">
+        <div>
+          <h2 class="func-panel-title">Test Cases</h2>
+          <p class="func-panel-sub" id="rowCountLabel">0 test cases</p>
+        </div>
+        <div class="func-header-actions">
+          <button class="func-run-all-btn" id="runAllBtn" type="button">▶ Run All</button>
+          <button class="func-clear-btn" id="clearResultsBtn" type="button">Clear Results</button>
+          <button class="func-clearall-btn" id="clearAllBtn" type="button">Clear All Test Cases</button>
+          <div class="func-report-wrap" id="writeReportWrap">
+            <button class="func-report-btn" id="writeReportToggle" type="button">📄 Report ▾</button>
+            <div class="func-report-menu hidden" id="writeReportMenu">
+              <button class="func-report-item" id="writeReportHtml" type="button">⬇ Download HTML</button>
+              <button class="func-report-item" id="writeReportPdf" type="button">🖨 Print / Save as PDF</button>
+            </div>
+          </div>
+          <button class="func-add-btn" id="addRowBtn" type="button">+ Add Test Case</button>
+        </div>
+      </div>
+
+      <div class="func-table-wrap" id="writeTableWrap">
+        <table class="func-table" id="testCaseTable">
+          <thead>
+            <tr>
+              <th class="col-sr">Sr No</th>
+              <th class="col-name">Test Case Name</th>
+              <th class="col-details">Test Case Details</th>
+              <th class="col-steps">Steps</th>
+              <th class="col-expected">Expected Output</th>
+              <th class="col-actual">Actual Output</th>
+              <th class="col-status">Status</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="testCaseBody"></tbody>
+        </table>
+      </div>
+
+      <div class="func-empty-state" id="writeEmptyState">
+        <span class="func-empty-icon">📋</span>
+        <p>No test cases yet. Click <strong>+ Add Test Case</strong> to get started.</p>
+      </div>
+    </section>
+
+    <!-- ── Upload Test Case Panel ─────────────────────── -->
+    <section class="func-panel hidden" id="uploadPanel" role="tabpanel">
+      <div class="func-panel-header">
+        <div>
+          <h2 class="func-panel-title">Upload Excel</h2>
+          <p class="func-panel-sub">Accepted formats: .xlsx, .xls, .csv</p>
+        </div>
+        <div class="func-header-actions">
+          <button class="func-sample-btn" id="downloadSample" type="button">⬇ Download Sample</button>
+          <button class="func-run-all-btn hidden" id="uploadRunAllBtn" type="button">▶ Run All</button>
+          <button class="func-clear-btn hidden" id="uploadClearBtn" type="button">Clear Results</button>
+          <button class="func-clearall-btn hidden" id="uploadClearAllBtn" type="button">Clear All Test Cases</button>
+          <div class="func-report-wrap hidden" id="uploadReportWrap">
+            <button class="func-report-btn" id="uploadReportToggle" type="button">📄 Report ▾</button>
+            <div class="func-report-menu hidden" id="uploadReportMenu">
+              <button class="func-report-item" id="uploadReportHtml" type="button">⬇ Download HTML</button>
+              <button class="func-report-item" id="uploadReportPdf" type="button">🖨 Print / Save as PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="func-upload-zone" id="excelUploadZone" role="button" tabindex="0" aria-label="Upload Excel file">
+        <div class="func-upload-prompt" id="excelUploadPrompt">
+          <span class="func-upload-icon">📊</span>
+          <strong>Drop your Excel file here</strong>
+          <span>or click to browse (.xlsx, .xls, .csv)</span>
+          <input type="file" id="excelFile" accept=".xlsx,.xls,.csv">
+        </div>
+      </div>
+
+      <div class="func-table-wrap hidden" id="uploadTableWrap">
+        <div class="func-upload-meta" id="uploadMeta"></div>
+        <table class="func-table" id="uploadTable">
+          <thead>
+            <tr>
+              <th class="col-sr">Sr No</th>
+              <th class="col-name">Test Case Name</th>
+              <th class="col-details">Test Case Details</th>
+              <th class="col-steps">Steps</th>
+              <th class="col-expected">Expected Output</th>
+              <th class="col-actual">Actual Output</th>
+              <th class="col-status">Status</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="uploadTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Screenshot modal -->
+  <div class="func-ss-modal hidden" id="screenshotModal">
+    <div class="func-ss-backdrop" id="screenshotBackdrop"></div>
+    <div class="func-ss-dialog">
+      <div class="func-ss-header">
+        <span>Failure Screenshot</span>
+        <button class="func-ss-close" id="closeScreenshotBtn" type="button">✕</button>
+      </div>
+      <div class="func-ss-body">
+        <img class="func-ss-img" id="screenshotImg" src="" alt="">
+        <p class="func-ss-fallback hidden" id="screenshotFallback">Screenshot could not be captured for this test.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="functional-testing.js"></script>
+</body>
+</html>
