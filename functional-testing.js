@@ -44,13 +44,13 @@ function showScreenshot(dataUrl) {
     img.classList.add("hidden");
     fallback.classList.remove("hidden");
   }
-  document.getElementById("screenshotModal").classList.remove("hidden");
+  document.getElementById("screenshotModal").style.display = "flex";
 }
 document.getElementById("closeScreenshotBtn").addEventListener("click", () => {
-  document.getElementById("screenshotModal").classList.add("hidden");
+  document.getElementById("screenshotModal").style.display = "none";
 });
 document.getElementById("screenshotBackdrop").addEventListener("click", () => {
-  document.getElementById("screenshotModal").classList.add("hidden");
+  document.getElementById("screenshotModal").style.display = "none";
 });
 
 function attachScreenshotBtn(tr, dataUrl) {
