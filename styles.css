@@ -2519,14 +2519,17 @@ form {
 }
 .func-screenshot-btn:hover { background: #fee2e2; }
 
-/* Screenshot modal — visibility controlled entirely by JS style.display */
+/* Screenshot modal — hidden by default in CSS, shown only via JS style.display='flex' */
 .func-ss-modal {
+  display: none;
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: flex;
   align-items: center;
   justify-content: center;
+}
+.func-ss-modal.hidden {
+  display: none !important;
 }
 .func-ss-backdrop {
   position: absolute;
