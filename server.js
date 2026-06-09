@@ -656,8 +656,17 @@ async function evaluateExpected(page, expected, fallbackUrl = '') {
 // GET /api/browsers
 app.get('/api/browsers', (req, res) => {
   if (process.platform !== 'win32') {
-    // Linux (Render): only Chrome is reliably available via @sparticuz/chromium
-    return res.json([{ id: 'chrome', name: 'Chrome', path: null }]);
+    // Linux (Render): Chrome is always available via @sparticuz/chromium
+    const browsers = [{ id: 'chrome', name: 'Chrome', path: null }];
+    // Firefox if installed via apt-get (Render build command: apt-get install -y firefox-esr)
+    const linuxFirefoxPaths = [
+      '/usr/bin/firefox', '/usr/bin/firefox-esr',
+      '/usr/lib/firefox/firefox', '/usr/lib/firefox-esr/firefox-esr',
+      '/snap/bin/firefox',
+    ];
+    const ffPath = linuxFirefoxPaths.find(p => fs.existsSync(p));
+    if (ffPath) browsers.push({ id: 'firefox', name: 'Firefox', path: ffPath });
+    return res.json(browsers);
   }
   // Windows: scan for system-installed browsers
   const browsers = findInstalledBrowsers();
